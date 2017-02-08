@@ -1,0 +1,20 @@
+<library path="lib/librqt_pcl_visualizer">
+  <class name="rqt_pcl_visualizer/MyPlugin" type="rqt_pcl_visualizer::MyPlugin" base_class_type="rqt_gui_cpp::Plugin">
+    <description>
+      Display point clouds with the PCL visualizer
+    </description>
+    <qtgui>
+      <!-- optional grouping...
+      <group>
+        <label>Group</label>
+      </group>
+      <group>
+        <label>Subgroup</label>
+      </group>
+      -->
+      <label>rqt pcl visualizer</label>
+      <icon type="theme">system-help</icon>
+      <statustip>Display point clouds with the PCL visualizer</statustip>
+    </qtgui>
+  </class>
+</library>
