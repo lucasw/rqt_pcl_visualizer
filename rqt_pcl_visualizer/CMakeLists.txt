@@ -5,6 +5,7 @@ project(rqt_pcl_visualizer)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  pcl_ros
   roscpp
   roslint
   rqt_gui

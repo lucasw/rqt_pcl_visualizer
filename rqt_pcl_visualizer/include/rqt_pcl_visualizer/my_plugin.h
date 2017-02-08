@@ -1,9 +1,16 @@
 #ifndef rqt_pcl_visualizer_my_plugin_H
 #define rqt_pcl_visualizer_my_plugin_H
 
+#include <QWidget>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/visualization/pcl_visualizer.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <rqt_pcl_visualizer/ui_my_plugin.h>
-#include <QWidget>
+#include <vtkRenderWindow.h>
+
+typedef pcl::PointXYZRGBA PointT;
+typedef pcl::PointCloud<PointT> PointCloudT;
 
 namespace rqt_pcl_visualizer {
 
@@ -24,6 +31,8 @@ public:
 private:
   Ui::MyPluginWidget ui_;
   QWidget* widget_;
+  boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_;
+  PointCloudT::Ptr cloud_;
 };
 }  // namespace rqt_pcl_visualizer
 #endif  // rqt_pcl_visualizer_my_plugin_H
