@@ -5,6 +5,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl_ros/point_cloud.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <rqt_pcl_visualizer/ui_my_plugin.h>
 #include <vtkRenderWindow.h>
@@ -31,8 +32,10 @@ public:
 private:
   Ui::MyPluginWidget ui_;
   QWidget* widget_;
+  ros::Subscriber point_cloud2_sub_;
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_;
   PointCloudT::Ptr cloud_;
+  void pointCloud2Callback(const PointCloudT::ConstPtr& msg);
 };
 }  // namespace rqt_pcl_visualizer
 #endif  // rqt_pcl_visualizer_my_plugin_H
