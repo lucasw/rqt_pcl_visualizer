@@ -171,7 +171,7 @@ target_link_libraries(${PROJECT_NAME}
 if("${qt_gui_cpp_USE_QT_MAJOR_VERSION} " STREQUAL "5 ")
   target_link_libraries(${PROJECT_NAME} Qt5::Widgets)
 else()
-  target_link_libraries(${PROJECT_NAME} ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
+  target_link_libraries(${PROJECT_NAME} QVTK ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY})
 endif()
 
 #############
