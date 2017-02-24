@@ -33,14 +33,24 @@ void MyPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   ui_.qvtk_widget->update();
 
-  point_cloud2_sub_ = getNodeHandle().subscribe("point_cloud2", 1,
+  point_cloud2_sub_ = getNodeHandle().subscribe("point_cloud2", 10,
         &MyPlugin::pointCloud2Callback, this);
+
+  // TODO(lucasw) also have a visualization_msgs::Marker subscriber?
+
+  // need to have a fifo mode where old clouds are removed as new ones are received,
+  // Also need to have a mode where everything is kept indefinitely - buffer size == 0
+  // Set the buffer to 1 to clear everything old out
+  buffer_size_ = 1;
+  buffer_size_sub_ = getNodeHandle().subscribe("buffer_size", 2,
+        &MyPlugin::bufferSizeCallback, this);
 
   viewer_->setBackgroundColor (0.3, 0.3, 0.3);
 
   // Setup the cloud pointer
-  cloud_.reset(new PointCloudT);
+  //cloud_.reset(new PointCloudT);
 
+#if 0
   // The number of points in the cloud
   cloud_->points.resize(200);
 
@@ -55,10 +65,10 @@ void MyPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
     cloud_->points[i].g = 255;
     cloud_->points[i].b = 180;
   }
+#endif
 
-  viewer_->addPointCloud(cloud_, "cloud");
-  viewer_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 2, "cloud");
-
+  // viewer_->addPointCloud(cloud_, "cloud");
+  // viewer_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
 }
 
 void MyPlugin::shutdownPlugin()
@@ -74,7 +84,51 @@ void MyPlugin::pointCloud2Callback(const PointCloudT::ConstPtr& msg)
   // TODO(lucasw) each cloud need a new unique name, and go into a data structure
   // also containing a timestamp, and then depending on a timeout parameter
   // clouds that are too old would be removed
-  viewer_->updatePointCloud(msg, "cloud");
+  ++counter_;
+  // if buffer size is 0 then keep everything
+  if (buffer_size_ > 0)
+    counter_ %= buffer_size_;
+  if (counter_ > highest_count_)
+    highest_count_ = counter_;
+  std::stringstream ss;
+  ss << "cloud_" << counter_;
+  // This should be okay if it doesn't exist yet
+  // ROS_INFO_STREAM(ss.str() << " " << buffer_size_);
+  // contains() is in 1.8.0
+  // if (viewer_->contains(ss.str()))
+  //   viewer_->removePointCloud(ss.str());
+  if (!viewer_->updatePointCloud(msg, ss.str()))
+  {
+    viewer_->addPointCloud(msg, ss.str());
+    viewer_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, ss.str());
+  }
+}
+
+void MyPlugin::bufferSizeCallback(const std_msgs::UInt32::ConstPtr& msg)
+{
+
+  if ((msg->data != 0) && (highest_count_ >= msg->data))
+  {
+    // this may not be efficient for very larger buffer sizes that were
+    // never filled up to begin with- may want to track the highest
+    // used counter instead.
+    uint32_t count = 0;
+    for (uint32_t i = msg->data; i <= highest_count_; ++i)
+    {
+      std::stringstream ss;
+      ss << "cloud_" << i;
+      // if (!viewer_->contains(ss.str()))
+      //  break;
+      viewer_->removePointCloud(ss.str());
+      // if (!viewer_->removePointCloud(ss.str()))
+      //   break;
+      ++count;
+    }
+    ROS_INFO_STREAM("removed " << count << ", highest " << highest_count_);
+    highest_count_ = 0;
+  }
+  buffer_size_ = msg->data;
+  ROS_INFO_STREAM("buffer size " << buffer_size_ << ", counter " << counter_);
 }
 
 void MyPlugin::saveSettings(qt_gui_cpp::Settings& plugin_settings, qt_gui_cpp::Settings& instance_settings) const

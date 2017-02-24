@@ -8,6 +8,7 @@
 #include <pcl_ros/point_cloud.h>
 #include <rqt_gui_cpp/plugin.h>
 #include <rqt_pcl_visualizer/ui_my_plugin.h>
+#include <std_msgs/UInt32.h>
 #include <vtkRenderWindow.h>
 
 typedef pcl::PointXYZRGBA PointT;
@@ -34,8 +35,15 @@ private:
   QWidget* widget_;
   ros::Subscriber point_cloud2_sub_;
   boost::shared_ptr<pcl::visualization::PCLVisualizer> viewer_;
-  PointCloudT::Ptr cloud_;
+  // PointCloudT::Ptr cloud_;
   void pointCloud2Callback(const PointCloudT::ConstPtr& msg);
+
+  std::map<uint32_t, std::string> pc_map_;
+  uint32_t counter_;
+  uint32_t highest_count_;
+  uint32_t buffer_size_;
+  ros::Subscriber buffer_size_sub_;
+  void bufferSizeCallback(const std_msgs::UInt32::ConstPtr& msg);
 };
 }  // namespace rqt_pcl_visualizer
 #endif  // rqt_pcl_visualizer_my_plugin_H
