@@ -33,7 +33,7 @@ void MyPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
 
   ui_.qvtk_widget->update();
 
-  point_cloud2_sub_ = getNodeHandle().subscribe("point_cloud2", 10,
+  point_cloud2_sub_ = getNodeHandle().subscribe("point_cloud2", 20,
         &MyPlugin::pointCloud2Callback, this);
 
   // TODO(lucasw) also have a visualization_msgs::Marker subscriber?
@@ -45,35 +45,25 @@ void MyPlugin::initPlugin(qt_gui_cpp::PluginContext& context)
   buffer_size_sub_ = getNodeHandle().subscribe("buffer_size", 2,
         &MyPlugin::bufferSizeCallback, this);
 
+  // TODO(lucasw) change this with subscriber or service call
   viewer_->setBackgroundColor (0.3, 0.3, 0.3);
-
-  // Setup the cloud pointer
-  //cloud_.reset(new PointCloudT);
-
-#if 0
-  // The number of points in the cloud
-  cloud_->points.resize(200);
-
-  // Fill the cloud with some points
-  for (size_t i = 0; i < cloud_->points.size (); ++i)
-  {
-    cloud_->points[i].x = 1024 * rand() / (RAND_MAX + 1.0f);
-    cloud_->points[i].y = 1024 * rand() / (RAND_MAX + 1.0f);
-    cloud_->points[i].z = 1024 * rand() / (RAND_MAX + 1.0f);
-
-    cloud_->points[i].r = 250;
-    cloud_->points[i].g = 255;
-    cloud_->points[i].b = 180;
-  }
-#endif
-
-  // viewer_->addPointCloud(cloud_, "cloud");
-  // viewer_->setPointCloudRenderingProperties(pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "cloud");
 }
 
 void MyPlugin::shutdownPlugin()
 {
   point_cloud2_sub_.shutdown();
+
+  for (uint32_t i = 0; i <= highest_count_; ++i)
+  {
+    std::stringstream ss;
+    ss << "cloud_" << i;
+    // if (!viewer_->contains(ss.str()))
+    //  break;
+    viewer_->removePointCloud(ss.str());
+    // if (!viewer_->removePointCloud(ss.str()))
+    //   break;
+  }
+
 }
 
 void MyPlugin::pointCloud2Callback(const PointCloudT::ConstPtr& msg)
@@ -112,6 +102,7 @@ void MyPlugin::bufferSizeCallback(const std_msgs::UInt32::ConstPtr& msg)
     // this may not be efficient for very larger buffer sizes that were
     // never filled up to begin with- may want to track the highest
     // used counter instead.
+    ROS_INFO_STREAM("removing " << msg->data << " to highest " << highest_count_);
     uint32_t count = 0;
     for (uint32_t i = msg->data; i <= highest_count_; ++i)
     {
@@ -119,6 +110,7 @@ void MyPlugin::bufferSizeCallback(const std_msgs::UInt32::ConstPtr& msg)
       ss << "cloud_" << i;
       // if (!viewer_->contains(ss.str()))
       //  break;
+      ROS_INFO_STREAM(ss.str());
       viewer_->removePointCloud(ss.str());
       // if (!viewer_->removePointCloud(ss.str()))
       //   break;

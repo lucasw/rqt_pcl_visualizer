@@ -30,7 +30,7 @@ class GenPC2:
 
         # while not rospy.is_shutdown():
         if True:
-            dt = 1.0
+            dt = 0.05
             rospy.loginfo("small buffer mode")
             self.buffer_size_pub.publish(UInt32(10))
             rospy.sleep(0.4)
