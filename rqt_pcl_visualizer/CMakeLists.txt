@@ -157,7 +157,10 @@ add_library(${PROJECT_NAME}
     )
 
 ## Declare a C++ executable
-# add_executable(rqt_pcl_visualizer_node src/rqt_pcl_visualizer_node.cpp)
+add_executable(pcl_visualizer_demo ../pcl_visualizer_demo/pcl_visualizer_demo.cpp)
+target_link_libraries(pcl_visualizer_demo
+  ${catkin_LIBRARIES}
+)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
