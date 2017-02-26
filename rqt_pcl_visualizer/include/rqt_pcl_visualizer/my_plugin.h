@@ -1,11 +1,14 @@
 #ifndef rqt_pcl_visualizer_my_plugin_H
 #define rqt_pcl_visualizer_my_plugin_H
 
+#include <QTimer>
 #include <QWidget>
+#include <boost/thread/mutex.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include <pcl/visualization/pcl_visualizer.h>
 #include <pcl_ros/point_cloud.h>
+#include <queue>
 #include <rqt_gui_cpp/plugin.h>
 #include <rqt_pcl_visualizer/ui_my_plugin.h>
 #include <std_msgs/UInt32.h>
@@ -30,6 +33,14 @@ public:
   // Comment in to signal that the plugin has a way to configure it
   // bool hasConfiguration() const;
   // void triggerConfiguration();
+
+Q_SIGNALS:
+  void bufferSizeSignal(quint32 size);
+
+private Q_SLOTS:
+  void updatePointCloud();
+  void updateBufferSize(quint32 size);
+
 private:
   Ui::MyPluginWidget ui_;
   QWidget* widget_;
@@ -38,12 +49,17 @@ private:
   // PointCloudT::Ptr cloud_;
   void pointCloud2Callback(const PointCloudT::ConstPtr& msg);
 
-  std::map<uint32_t, std::string> pc_map_;
+  QTimer* timer_;
+  boost::mutex lock_;
+  std::queue<PointCloudT::ConstPtr> point_cloud_queue_;
+
+  // std::map<uint32_t, std::string> pc_map_;
   uint32_t counter_;
   uint32_t highest_count_;
   uint32_t buffer_size_;
   ros::Subscriber buffer_size_sub_;
   void bufferSizeCallback(const std_msgs::UInt32::ConstPtr& msg);
+
 };
 }  // namespace rqt_pcl_visualizer
 #endif  // rqt_pcl_visualizer_my_plugin_H
